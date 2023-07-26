@@ -73,12 +73,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun likeById(id: Long, likedByMe: Boolean) {
             thread {
                 // Начинаем загрузку
-                _data.postValue(FeedModel(loading = true))
                 try {
                     // Данные успешно получены
-                    repository.likeById(id, likedByMe)
-                    val posts = repository.getAll()
-                    FeedModel(posts = posts, empty = posts.isEmpty())
+                    val newPost = repository.likeById(id, likedByMe)
+                    val posts = _data.value?.posts?.map { if(it.id == newPost.id) newPost else it }
+                    FeedModel(posts = posts.orEmpty())
                 } catch (e: IOException) {
                     // Получена ошибка
                     FeedModel(error = true)
