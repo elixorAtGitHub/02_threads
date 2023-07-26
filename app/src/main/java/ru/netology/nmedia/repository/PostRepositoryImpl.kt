@@ -6,6 +6,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.internal.EMPTY_REQUEST
 import ru.netology.nmedia.dto.Post
 import java.util.concurrent.TimeUnit
 
@@ -35,7 +36,7 @@ class PostRepositoryImpl: PostRepository {
             }
     }
 
-    override fun likeById(id: Long, likedByMe: Boolean) {           //: Post
+    override fun likeById(id: Long, likedByMe: Boolean): Post {           //: Post
 
         //Если true, то добавляем лайка в противном случае удаляем лайк
         if (likedByMe) {
@@ -49,7 +50,7 @@ class PostRepositoryImpl: PostRepository {
                 .close()
         } else {
             val request: Request = Request.Builder()
-                .post("".toRequestBody(jsonType))
+                .post(EMPTY_REQUEST)
                 .url("${BASE_URL}/api/slow/posts/$id/likes")
                 .build()
             client.newCall(request)
@@ -58,84 +59,22 @@ class PostRepositoryImpl: PostRepository {
         }
 
         //Получаем весь пост по id и возвращаем во viewmodel
+        val request: Request = Request.Builder()
+            .post(EMPTY_REQUEST)
+            .url("${BASE_URL}/api/slow/posts/$id")
+            .build()
+
+        return client.newCall(request)
+            .execute()
+            .let { it.body?.string() ?: throw RuntimeException("body is null") }
+            .let {
+                gson.fromJson(it, Post::class.java)
+            }
 
 
 
 
     }
-
-
-
-
-
-/*
-val request: Request = Request.Builder()
-
-    .post(EMPTY_REQUEST)
-    .url("${BASE_URL}/api/slow/posts/$id")
-    .build()
-
-client.newCall(request)
-    .execute()
-    .let { it.body?.string() ?: throw RuntimeException("body is null") }
-    .let {
-        gson.fromJson(it, Post::class.java)
-    }
-*/
-
-
-
-//проверка поставлен ли мной лайк
-
-
-
-// .let { it.body?.string() ?: throw RuntimeException("body is null") }
-//     .let {
-//         gson.fromJson(it, Post::class.java)
-//     }
-
-
-
-
-//Если true, то добавляем лайка
-/*
-val request: Request = Request.Builder()
-    .post("".toRequestBody(jsonType))
-    .url("${BASE_URL}/api/slow/posts/$id/likes")
-    .build()
-client.newCall(request)
-    .execute()
-    .close()
-*/
-
-
-
-
-//Если false, то удаляем лайк
-/*
-val request: Request = Request.Builder()
-    .delete()
-    .url("${BASE_URL}/api/slow/posts/$id/likes")
-    .build()
-
-client.newCall(request)
-    .execute()
-    .close()
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 override fun save(post: Post) {
